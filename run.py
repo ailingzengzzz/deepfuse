@@ -154,8 +154,8 @@ def train_human(full = False):
             'state_dict': net.state_dict(),
             'best_acc': best_err,
             'optimizer': optimizer.state_dict(),
-        }, is_best, 'checkpoint.{}.tar'.format(args.name))
-        if epoch % DECAY_EPOCH == 0:
+        }, is_best, 'checkpoint.{}.{}.tar'.format(args.name,epoch))
+'''        if epoch % DECAY_EPOCH == 0:
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': '3dHMP',
@@ -163,10 +163,9 @@ def train_human(full = False):
                 'best_acc': best_err,
                 'optimizer': optimizer.state_dict(),
             }, False, path)
-            # if not is_best:
-            #     lower_learning_rate(optimizer,DECAY_RATIO)
-
-    print('Finished Training')
+'''         # if not is_best:
+            # lower_learning_rate(optimizer,DECAY_RATIO)
+   # print('Finished Training')
 
 
 def test_human(path):
@@ -388,11 +387,14 @@ def check_raw(index):
             cv2.waitKey(0)
 
 
-def check_volume():
+def check_volume(index, is_test = True):
     from visualization import plot_voxel_label,plot_voxel
     ds = Human36V(HM_PATH)
+
     ds.data_augmentation = False
-    for i in range(0,1):
+    for i in index:
+        if is_test:
+            i+=ds.training_length
         data, label, mid, leng= ds[i]
         data = data.cpu()
         label = torch.from_numpy(label)
@@ -414,7 +416,6 @@ if __name__ == "__main__":
     init_parser()
     np.set_printoptions(precision=3,suppress=True)
     torch.cuda.set_device(args.gpu_id)
-
     # generate mcv
     # preprocess()
 
@@ -425,7 +426,7 @@ if __name__ == "__main__":
     # test_human('checkpoint/human36_51.tar')
 
     # check volume in 3D
-    # check_volume()
+    #check_volume([1630],True)
 
     # check original 2d image
     # check_raw(range(210,221))

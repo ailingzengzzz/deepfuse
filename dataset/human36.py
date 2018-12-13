@@ -361,8 +361,8 @@ def movefile(s):
     :return:
     """
     import shutil
-    p = '/home/hfy/data/human36/{0}/MySegmentsMat/ground_truth_bs'.format(s)
-    pto = '/home/hfy/data/human36/{0}/MySegmentsMat/copy'.format(s)
+    p = '/home/data/human36/{0}/MySegmentsMat/ground_truth_bs'.format(s)
+    pto = '/home/data/human36/{0}/MySegmentsMat/copy'.format(s)
     if not os.path.isdir(pto):
         os.mkdir(pto)
     for l in os.listdir(p):
@@ -381,8 +381,8 @@ def movefile(s):
 
 def movefile1(s):
     import shutil
-    p = '/home/hfy/data/human36/{0}/MySegmentsMat/ground_truth_bs'.format(s)
-    pto = '/home/hfy/data/human36/{0}/MySegmentsMat/copy'.format(s)
+    p = '/home/data/human36/{0}/MySegmentsMat/ground_truth_bs'.format(s)
+    pto = '/home/data/human36/{0}/MySegmentsMat/copy'.format(s)
     for l in os.listdir(pto):
         dpath = os.path.join(pto, l)
         if os.path.isdir(dpath):
