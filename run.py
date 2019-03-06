@@ -15,6 +15,7 @@ from helper import AverageMeter,timeit
 from metrics import mean_error
 from torch.utils.data.sampler import SubsetRandomSampler
 from subset_sampler import SubsetSampler
+#from tensorboardX import SummaryWriter
 
 # init setting
 def init_parser():
@@ -122,7 +123,7 @@ def train_human(full = False):
     optimizer = optimizer_rms
     set_learning_rate(optimizer, args.learning_rate)
 
-    for epoch in range(args.start_epoch, args.epochs):  # loop over the dataset multiple times
+    for epoch in range(args.start_evalepoch, args.epochs):  # loop over the dataset multiple times
         print ('best error:', best_err)
         epoch_start_time = time()
         for param_group in optimizer.param_groups:
@@ -250,14 +251,14 @@ def train(train_loader, model, criterion, optimizer, epoch):
         end = time()
 
         if i % args.print_freq == 0:
-            s_ep = 'Epoch: [{0}][{1}/{2}]'.format(epoch,i, len(train_loader))
+            s_ep = 'Epoch: [{0}][{1}/{2}]'.format(epoch, i, len(train_loader))
             s_acc = 'Acc {err_t.val:.2f} ({err_t.avg:.2f})'.format(err_t=errors)
             s_loss = 'Loss {loss.val:.2f} ({loss.avg:.2f})'.format(loss=losses)
             s_time = 'Time {batch_time.val:.3f} ({batch_time.avg:.3f})'.format(batch_time=batch_time)
             s_data = 'Data {data_time.val:.3f} ({data_time.avg:.3f})'.format(data_time=data_time)
             print('{:28}{:25}{:27}{:20}{}'
                   .format(s_ep, s_acc, s_loss, s_time, s_data))
-    return losses.avg, errors.avg
+    return losses.avg, errors.avgmode
 
 
 def test(test_loader, model, criterion):

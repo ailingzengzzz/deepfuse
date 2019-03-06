@@ -1,8 +1,8 @@
-HM_PATH = '/home/data/human36'
+HM_PATH = '/home/alzeng/remote/data/human36'
 
-LEARNING_RATE = 1e-5
+LEARNING_RATE = 5e-5
 MOMENTUM = 0.9
-EPOCH_COUNT = 100
+EPOCH_COUNT = 40
 WEIGHT_DECAY = 0.0005
 BATCH_SIZE = 20
 TEST_BATCH = 1

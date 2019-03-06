@@ -6,6 +6,8 @@ from params import *
 from server_setting import *
 from mcv import make_mcv
 from camera_hm import *
+import matplotlib
+print(matplotlib.matplotlib_fname())
 from time import time
 from tempfile import TemporaryFile
 import glob
@@ -15,6 +17,7 @@ from time import time
 from augmentation import data_augmentation3D,random_shut
 from helper import timeit
 import h5py
+#import visualization as vis
 
 
 class MyReader():
@@ -49,7 +52,7 @@ class Subject(object):
         self.import_data()
         # self.ActionGroup()
 
-    def import_data(self):
+    def import_data(self): #self:{Subject}S1
         """
         init subject and action
         :return:
@@ -57,55 +60,52 @@ class Subject(object):
         p = os.path.join(HM_PATH,self.name, 'MySegmentsMat', 'ground_truth_bs','*.mp4')
         videos = glob.glob(p)
         for file in videos:
-            self.videoName.append(file.split('/')[-1])
+            self.videoName.append(file.split('/')[-1])  #videoName is a list of the last_file_name.mp4
 
-        # print Subject.ActionName
+        #print Subject.ActionName
         p = os.path.join(HM_PATH, self.name, 'MySegmentsMat', 'ground_truth_position', '*.csv')
-        csvs = glob.glob(p)
+        csvs = glob.glob(p)  # glob.glob: Find file path names that match specific rules
         for file in csvs:
             self.gtName.append(file.split('/')[-1])
 
-        files = os.listdir(os.path.join(HM_PATH,self.name, 'MySegmentsMat', 'ground_truth_bs'))
+        files = os.listdir(os.path.join(HM_PATH,self.name, 'MySegmentsMat', 'ground_truth_bs'))  #a list of folders and files' name below ground_truth_bs
         for name in files:
-            if os.path.isdir(os.path.join(HM_PATH,self.name, 'MySegmentsMat', 'ground_truth_bs',name)):
-                self.pvhName.append(name)
+            if os.path.isdir(os.path.join(HM_PATH,self.name, 'MySegmentsMat', 'ground_truth_bs',name)):  #if it is a dirctory, returns true
+                self.pvhName.append(name)   #pvhName is the folders name below ground_truth_bs
 
         self.videoName.sort()
         self.gtName.sort()
         self.pvhName.sort()
-        # print self.videoName
-        # print self.gtName
+
         for f in self.videoName:
             aname = f.split('.')[0]
             if aname not in self.actionDict:
                 self.actionDict[aname] = [aname+'.csv']
-            self.actionDict[aname].append(f)
+            self.actionDict[aname].append(f)  #actionDict = {dict}:{'Directions 1':['Directions 1.csv','Directions 1.54138969.mp4','xxx.mp4',...'Discussion':['Discusion.csv'..],''...}
         if len(self.videoName) == 0:
             self.actionName = self.pvhName
         else:
             self.actionName = self.actionDict.keys()
             self.actionName.sort()
-        # print self.actionName
-        # print self.actionDict[self.actionName[0]]
 
-    def select_action(self, num):
+
+    def select_action(self, num): #self: such as S1,num: such as 'Direction',etc.
         """
         select action including all the 4 video path and 1 gt
         :param num: action name or action index
         :return:
         """
-        # print action
         if type(num) is int:
             actionName = self.actionName[num]
         else:
             actionName = num
         gtfile = self.actionDict[actionName][0]
         gtfile = os.path.join(self._gtpath,gtfile)
-        gt = np.loadtxt(gtfile,dtype=np.str, delimiter=',')[:,:-1].astype(np.float32)
+        gt = np.loadtxt(gtfile,dtype=np.str, delimiter=',')[:,:-1].astype(np.float32) #gt is actionName.csv text
         # with h5py.File(gtfile, 'r') as hf:
         #     points = hf[hf.keys()[0]][()]
         # return [os.path.join(self._bspath,x) for x in self.actionDict[actionName][1:]], points.T
-        return [os.path.join(self._bspath,x) for x in self.actionDict[actionName][1:]], gt
+        return [os.path.join(self._bspath,x) for x in self.actionDict[actionName][1:]], gt   # x is xxx.mp4
 
     def __str__(self):
         return self.name
@@ -122,12 +122,14 @@ class Human36(Dataset):
 
         self.root_path = root_path
         self.current_video = ""
-        self.subjects = filter(lambda x: os.path.isdir(os.path.join(root_path, x)), os.listdir(root_path))
-        self.subjects.sort()
-        # self.subjects = ['S1','S5','S6','S7','S8','S9','S11']
-        self.subjects = ['S1']
+        #self.subjects = filter(lambda x: os.path.isdir(os.path.join(root_path, x)), os.listdir(root_path))
+        #self.subjects.sort()
+        #self.subjects = ['S1']
+        self.subjects = ['S1','S5','S6','S7','S8','S9','S11']
         self.subjects = [Subject(i) for i in self.subjects]
 
+        print('Subject',Subject)
+        print('subject is ', self.subjects)
         self.data_dict = {}
         self.data = []
         self.length = 0
@@ -136,7 +138,7 @@ class Human36(Dataset):
         self.save = False
         self.raw = False
         # self.subjects[0].actionName = ['Directions']
-        self.cams = load_cameras(os.path.join(HM_PATH,'h36m','cameras.h5'))
+        self.cams = load_cameras(os.path.join(HM_PATH,'cameras.h5'))
         for sub in self.subjects:
             self.data_dict[sub.name] = {}
             # self.data_dict[sub]['camera'] = self.cams[sub]
@@ -171,6 +173,7 @@ class Human36(Dataset):
         if not self.raw and os.path.isfile(np_path):
             npz = np.load(np_path)
             mcv, label, mid, leng = npz['mcv'], npz['label'], npz['mid'], npz['len']
+            #vis.plot_voxel_label(label)
             return mcv, label, mid, leng.reshape((1))
         for i in range(NUM_CAM_HM):
             # current video reader not matched
@@ -241,7 +244,6 @@ class Human36V(Dataset):
         self.subjects = filter(lambda x: os.path.isdir(os.path.join(root_path, x)), os.listdir(root_path))
         self.subjects.sort()
         self.subjects = ['S1','S5','S6','S7','S8','S9','S11']
-        # self.subjects = ['S1']
         self.length = 0
         self.training_subjects = ['S1','S5','S6','S7','S8']
         # self.training_subjects = ['S1']
@@ -397,8 +399,8 @@ def movefile1(s):
 
 if __name__ == '__main__':
     ds = Human36(HM_PATH)
-    print len(ds)
-    ds[0]
+ #  print len(ds)
+ #  ds[0]
     # tc.raw = False
     # tc.save = True
     # for i in range(len(tc)):
@@ -409,7 +411,7 @@ if __name__ == '__main__':
     #     s = tc[i]
 
         # timeit()
-        # visualize_sample(tc[0])
+    #visualize_sample(tc[0])
     # for i in range(10):
     #     tc.data_augmentation = False
     #     visualize_sample(tc[i])
